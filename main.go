@@ -1,13 +1,42 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"fmt"
+	"log"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/nhatvu148/go_reportmaker/models"
+	"github.com/nhatvu148/go_reportmaker/pkg/logging"
+	"github.com/nhatvu148/go_reportmaker/pkg/setting"
+	"github.com/nhatvu148/go_reportmaker/routers"
+)
+
+func init() {
+	setting.Setup()
+	logging.Setup()
+	models.Setup()
+}
 
 func main() {
-	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
-	r.Run(":4500") // listen and serve on 0.0.0.0:8080
+	gin.SetMode(setting.ServerSetting.RunMode)
+	fmt.Printf("Run mode: %s\n", setting.ServerSetting.RunMode)
+
+	routersInit := routers.InitRouter()
+	readTimeout := setting.ServerSetting.ReadTimeout
+	writeTimeout := setting.ServerSetting.WriteTimeout
+	endPoint := fmt.Sprintf(":%d", setting.ServerSetting.HttpPort)
+	maxHeaderBytes := 1 << 20
+
+	server := &http.Server{
+		Addr:           endPoint,
+		Handler:        routersInit,
+		ReadTimeout:    readTimeout,
+		WriteTimeout:   writeTimeout,
+		MaxHeaderBytes: maxHeaderBytes,
+	}
+
+	log.Printf("[info] start http server listening %s", endPoint)
+
+	server.ListenAndServe()
 }
