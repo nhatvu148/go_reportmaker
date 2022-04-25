@@ -33,3 +33,25 @@ func GetProjects() ([]*Project, error) {
 
 	return projects, nil
 }
+
+func AddProject(data map[string]interface{}) error {
+	project := Project{
+		Pjid:           data["pjid"].(string),
+		Pjname_jp:      data["pjname_jp"].(string),
+		Pjname_en:      data["pjname_en"].(string),
+		Startdate:      data["startdate"].(string),
+		Deadline:       data["deadline"].(string),
+		Expecteddate:   data["expecteddate"].(string),
+		Scode:          data["scode"].(int),
+		Ccode:          data["ccode"].(int),
+		Cpjname_jp:     data["cpjname_jp"].(string),
+		Cpjname_en:     data["cpjname_en"].(string),
+		Rcode:          data["rcode"].(string),
+		Completiondate: data["completiondate"].(string),
+	}
+	if err := db.Create(&project).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
